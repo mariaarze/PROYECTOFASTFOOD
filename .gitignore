@@ -1,28 +1,1119 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
 
-# Precompiled Headers
-*.gch
-*.pch
+#include "stdafx.h"
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+using namespace std;
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+struct Cliente
+{
+	int cod_cliente;
+	char nombre[30];
+	int edad;
+	int cod_dieta;
+	bool estudiante_upsa;
+	bool eliminado;
+};
 
-# Fortran module files
-*.mod
+struct Plato
+{
+	int cod_plato;
+	char nombre[30];
+	float precio;
+	bool eliminado;
+};
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+#define N_platos 6
 
-# Executables
-*.exe
-*.out
-*.app
+struct Dieta
+{
+	int cod_dieta;
+	char nombre[30];
+	char descripcion[50];
+	int platos[N_platos];
+	bool eliminado;
+};
+
+
+void MostrarPlato(Plato reg)
+{
+	cout<<reg.cod_plato<<"	";
+	cout<<reg.nombre<<"	";
+	cout<<reg.precio<<"	";
+	cout<<endl;
+}
+bool PedirDatosPlato(Plato &reg)
+{
+	char aux[100];
+
+	cout<<"nombre:";
+	gets(reg.nombre);
+
+	do
+	{
+		reg.precio = -1;
+		cout<<"precio:";
+		cin>> reg.precio;
+		gets(aux);
+		cin.clear();
+	}while(reg.precio == -1);
+
+	reg.eliminado = false;
+	
+	return true;
+}
+
+void AdicionarPlato(Plato reg_busc)
+{
+	FILE *ptr;
+
+	ptr = fopen("Plato.dat","ab");
+	
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		fwrite(&reg_busc,sizeof(reg_busc),1,ptr);
+		fclose(ptr);
+	}
+}
+void ModificarPlato(Plato reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Plato reg;
+	FILE *ptr;
+
+	ptr = fopen("Plato.dat","rb+");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_plato == reg.cod_plato && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(esta)
+		{
+			fseek(ptr,sizeof(reg)*(-1),SEEK_CUR);
+
+			fwrite(&reg_busc,sizeof(reg_busc),1,ptr);
+		}
+		else
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+}
+bool BuscarPlato(Plato &reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Plato reg;
+	FILE *ptr;
+
+	ptr = fopen("Plato.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_plato == reg.cod_plato && !reg.eliminado)
+			{
+				reg_busc = reg;
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(!esta)
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+	return esta;
+}
+bool ExistePlato(int cod_plato)
+{
+	bool esta = false,eliminado = false;
+	Plato reg;
+	FILE *ptr;
+
+	ptr = fopen("Plato.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(cod_plato == reg.cod_plato && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(!esta)
+		{
+			cout<<"codigo inexistente"<<endl;
+		}
+
+		fclose(ptr);
+	}
+	return esta;
+}
+void EliminarPlato(Plato reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Plato reg;
+	FILE *ptr;
+
+	ptr = fopen("Plato.dat","rb+");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_plato == reg.cod_plato && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(esta)
+		{
+			fseek(ptr,sizeof(reg)*(-1),SEEK_CUR);
+			reg.eliminado=true;
+			fwrite(&reg,sizeof(reg),1,ptr);
+		}
+		else
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+}
+void ListarPlato()
+{
+	Plato reg;
+	FILE *ptr;
+
+	ptr = fopen("Plato.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		cout<<"Listado de Plato"<<endl;
+		cout<<"cod_plato	nombre	precio"<<endl;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr))
+		{
+			if(!reg.eliminado)
+			{
+				MostrarPlato(reg);
+			}
+
+			fread(&reg,sizeof(reg),1,ptr);
+		}
+		fclose(ptr);
+	}
+}
+void MenuPlato()
+{
+	Plato reg;
+	int op = 0;
+	char aux[100];
+	do
+	{
+		cout<<endl<<"Plato";
+		cout<<endl<<"MENU DE Opciones";
+		cout<<endl<<"1. Adicionar";
+		cout<<endl<<"2. Listar";
+		cout<<endl<<"3. Buscar";
+		cout<<endl<<"4. Eliminar";
+		cout<<endl<<"5. Modificar";
+		cout<<endl<<"6. Salir";
+		cout<<endl<< "opcion: ";
+		gets(aux);
+		op = atoi(aux);
+		system("cls");
+		switch(op)
+		{
+		case 1:
+			{
+				do
+				{
+					reg.cod_plato = -1;
+					cout<<"Ingresar cod_plato:";
+					cin>>reg.cod_plato;
+					if(reg.cod_plato != 0 && ExistePlato(reg.cod_plato))
+					{
+						reg.cod_plato = -1;
+						cout<<"Error: id esta siendo usado"<<endl;
+					}
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_plato == -1);
+				if((reg.cod_plato!= 0)&&PedirDatosPlato(reg))
+				{
+					AdicionarPlato(reg);
+				}
+				break;
+			}
+		case 2:
+			{
+				ListarPlato();
+				break;
+			}
+		case 3:
+			{
+				do
+				{
+					reg.cod_plato = -1;
+					cout<<"Ingresar cod_plato:";
+					cin>>reg.cod_plato;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_plato == -1 );
+				if(BuscarPlato(reg))
+				{
+					MostrarPlato(reg);
+				}
+				break;
+			}
+		case 4:
+			{
+				do
+				{
+					reg.cod_plato = -1;
+					cout<<"Ingresar cod_plato:";
+					cin>>reg.cod_plato;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_plato == -1 );
+				EliminarPlato(reg);
+				break;
+			}
+		case 5:
+			{
+				do
+				{
+					reg.cod_plato = -1;
+					cout<<"Ingresar cod_plato:";
+					cin>>reg.cod_plato;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_plato == -1 || (reg.cod_plato != 0 && !ExistePlato(reg.cod_plato)));
+				if((reg.cod_plato != 0)&& PedirDatosPlato(reg))
+				{
+					ModificarPlato(reg);
+				}
+				break;
+			}
+		}
+	}while(op != 6);
+}
+float PrecioPlatos(int platos[],int n)
+{
+	Plato reg;
+	float precio = 0;
+	for(int i=0;i<N_platos;i++)
+	{
+		reg.cod_plato = platos[i];
+		BuscarPlato(reg);
+		precio = precio + reg.precio;
+	}
+	return precio;
+}
+void MostrarDieta(Dieta reg)
+{
+	cout<<reg.cod_dieta<<"	";
+	cout<<reg.nombre<<"	";
+	cout<<reg.descripcion<<"	";
+	cout<<PrecioPlatos(reg.platos,N_platos)<<"	";
+	cout<<endl;
+}
+void MostrarDietaDetalle(Dieta reg)
+{
+	Plato regp;
+	cout<<"codigo: "<<reg.cod_dieta<<endl;
+	cout<<"nombre: "<<reg.nombre<<endl;
+	cout<<"descripcion: "<<reg.descripcion<<endl;
+	cout<<"precio total: "<<PrecioPlatos(reg.platos,N_platos)<<endl;
+	cout<<endl;
+	for(int i=0;i<N_platos;i++)
+	{
+		regp.cod_plato = reg.platos[i];
+		BuscarPlato(regp);
+		cout<<"	Plato "<<i+1<<":	";
+		MostrarPlato(regp);
+	}
+	cout<<endl;
+}
+bool PedirDatosDieta(Dieta &reg)
+{
+	char aux[100];
+
+	cout<<"nombre:";
+	gets(reg.nombre);
+
+	cout<<"descripcion:";
+	gets(reg.descripcion);
+
+	ListarPlato();
+	for(int i=0;i<N_platos;i++)
+	{
+		do
+		{
+			reg.platos[i] = -1;
+			cout<<"plato "<<i+1<<":";
+			cin>>reg.platos[i];
+			gets(aux);
+			cin.clear();
+		}while(reg.platos[i] == -1 || (reg.platos[i] != 0 && !ExistePlato(reg.platos[i])));
+		if(reg.platos[i] == 0) return false;
+	}
+
+	reg.eliminado = false;
+	
+	return true;
+}
+
+void AdicionarDieta(Dieta reg_busc)
+{
+	FILE *ptr;
+
+	ptr = fopen("Dieta.dat","ab");
+	
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		bool eliminado = false;
+
+		fwrite(&reg_busc,sizeof(reg_busc),1,ptr);
+		fclose(ptr);
+	}
+}
+void ModificarDieta(Dieta reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Dieta reg;
+	FILE *ptr;
+
+	ptr = fopen("Dieta.dat","rb+");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_dieta == reg.cod_dieta && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(esta)
+		{
+			fseek(ptr,sizeof(reg)*(-1),SEEK_CUR);
+
+			fwrite(&reg_busc,sizeof(reg_busc),1,ptr);
+		}
+		else
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+}
+bool BuscarDieta(Dieta &reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Dieta reg;
+	FILE *ptr;
+
+	ptr = fopen("Dieta.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_dieta == reg.cod_dieta && !reg.eliminado)
+			{
+				reg_busc = reg;
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(!esta)
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+	return esta;
+}
+bool ExisteDieta(int cod_dieta)
+{
+	bool esta = false,eliminado = false;
+	Dieta reg;
+	FILE *ptr;
+
+	ptr = fopen("Dieta.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(cod_dieta == reg.cod_dieta && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(!esta)
+		{
+			cout<<"codigo inexistente"<<endl;
+		}
+
+		fclose(ptr);
+	}
+	return esta;
+}
+void EliminarDieta(Dieta reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Dieta reg;
+	FILE *ptr;
+
+	ptr = fopen("Dieta.dat","rb+");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_dieta == reg.cod_dieta && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(esta)
+		{
+			fseek(ptr,sizeof(reg)*(-1),SEEK_CUR);
+			reg.eliminado=true;
+			fwrite(&reg,sizeof(reg),1,ptr);
+		}
+		else
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+}
+void ListarDieta()
+{
+	Dieta reg;
+	FILE *ptr;
+
+	ptr = fopen("Dieta.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		cout<<"Listado de Dieta"<<endl;
+		cout<<"cod_dieta	nombre	precio_semanal	descripcion"<<endl;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr))
+		{
+			if(!reg.eliminado)
+			{
+				MostrarDieta(reg);
+			}
+
+			fread(&reg,sizeof(reg),1,ptr);
+		}
+		fclose(ptr);
+	}
+}
+void MenuDieta()
+{
+	Dieta reg;
+	int op = 0;
+	char aux[100];
+	do
+	{
+		cout<<endl<<"Dieta";
+		cout<<endl<<"MENU DE Opciones";
+		cout<<endl<<"1. Adicionar";
+		cout<<endl<<"2. Listar";
+		cout<<endl<<"3. Buscar";
+		cout<<endl<<"4. Eliminar";
+		cout<<endl<<"5. Modificar";
+		cout<<endl<<"6. Salir";
+		cout<<endl<< "opcion: ";
+		gets(aux);
+		op = atoi(aux);
+		system("cls");
+		switch(op)
+		{
+		case 1:
+			{
+				do
+				{
+					reg.cod_dieta = -1;
+					cout<<"Ingresar cod_dieta:";
+					cin>>reg.cod_dieta;
+					if(reg.cod_dieta != 0 && ExisteDieta(reg.cod_dieta))
+					{
+						reg.cod_dieta = -1;
+						cout<<"Error: id esta siendo usado"<<endl;
+					}
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_dieta == -1);
+				if((reg.cod_dieta!= 0)&&PedirDatosDieta(reg))
+				{
+					AdicionarDieta(reg);
+				}
+				break;
+			}
+		case 2:
+			{
+				ListarDieta();
+				break;
+			}
+		case 3:
+			{
+				do
+				{
+					reg.cod_dieta = -1;
+					cout<<"Ingresar cod_dieta:";
+					cin>>reg.cod_dieta;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_dieta == -1 );
+				if(BuscarDieta(reg))
+				{
+					MostrarDietaDetalle(reg);
+				}
+				break;
+			}
+		case 4:
+			{
+				do
+				{
+					reg.cod_dieta = -1;
+					cout<<"Ingresar cod_dieta:";
+					cin>>reg.cod_dieta;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_dieta == -1 );
+				EliminarDieta(reg);
+				break;
+			}
+		case 5:
+			{
+				do
+				{
+					reg.cod_dieta = -1;
+					cout<<"Ingresar cod_dieta:";
+					cin>>reg.cod_dieta;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_dieta == -1 || (reg.cod_dieta != 0 && !ExisteDieta(reg.cod_dieta)));
+				if((reg.cod_dieta != 0)&& PedirDatosDieta(reg))
+				{
+					ModificarDieta(reg);
+				}
+				break;
+			}
+		}
+	}while(op != 6);
+}
+void MostrarCliente(Cliente reg)
+{
+	cout<<reg.cod_cliente<<"	";
+	cout<<reg.nombre<<"	";
+	cout<<reg.edad<<"	";
+	cout<<reg.cod_dieta<<"	";
+	if(reg.estudiante_upsa)
+	{
+		cout<<"SI	";
+	}
+	else
+	{
+		cout<<"NO	";
+	}
+	cout<<endl;
+}
+bool PedirDatosCliente(Cliente &reg)
+{
+	char aux[100];
+
+	cout<<"nombre:";
+	gets(reg.nombre);
+
+
+	do
+	{
+		reg.edad = -1;
+		cout<<"edad:";
+		cin>> reg.edad;
+		gets(aux);
+		cin.clear();
+	}while(reg.edad == -1);
+
+	do
+	{
+		reg.cod_dieta = -1;
+		cout<<"Ingresar cod_dieta:";
+		cin>>reg.cod_dieta;
+		gets(aux);
+		cin.clear();
+	}while(reg.cod_dieta == -1 || (reg.cod_dieta != 0 && !ExisteDieta(reg.cod_dieta)));
+	if(reg.cod_dieta == 0) return false;
+
+	do
+	{
+		strcpy(aux, "A");
+		cout<<"Estudiante de la upsa (S/N):";
+		gets(aux);
+		if(aux[0] == 'S')
+		{
+			reg.estudiante_upsa = true;
+		}
+		else if(aux[0] == 'N')
+		{
+			reg.estudiante_upsa = false;
+		}
+		else
+		{
+			cout<<"Usar S para Si, N para No"<<endl;
+			strcpy(aux, "A");
+		}
+	}while(aux[0] == 'A');
+	
+	reg.eliminado = false;
+	
+	return true;
+}
+
+void AdicionarCliente(Cliente reg_busc)
+{
+	FILE *ptr;
+
+	ptr = fopen("Cliente.dat","ab");
+	
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		bool eliminado = false;
+
+		fwrite(&reg_busc,sizeof(reg_busc),1,ptr);
+		fclose(ptr);
+	}
+}
+void ModificarCliente(Cliente reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Cliente reg;
+	FILE *ptr;
+
+	ptr = fopen("Cliente.dat","rb+");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_cliente == reg.cod_cliente && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(esta)
+		{
+			fseek(ptr,sizeof(reg)*(-1),SEEK_CUR);
+
+			fwrite(&reg_busc,sizeof(reg_busc),1,ptr);
+		}
+		else
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+}
+bool BuscarCliente(Cliente &reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Cliente reg;
+	FILE *ptr;
+
+	ptr = fopen("Cliente.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_cliente == reg.cod_cliente && !reg.eliminado)
+			{
+				reg_busc = reg;
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(!esta)
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+	return esta;
+}
+bool ExisteCliente(int cod_cliente)
+{
+	bool esta = false,eliminado = false;
+	Cliente reg;
+	FILE *ptr;
+
+	ptr = fopen("Cliente.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(cod_cliente == reg.cod_cliente && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(!esta)
+		{
+			cout<<"codigo inexistente"<<endl;
+		}
+
+		fclose(ptr);
+	}
+	return esta;
+}
+void EliminarCliente(Cliente reg_busc)
+{
+	bool esta = false,eliminado = false;
+	Cliente reg;
+	FILE *ptr;
+
+	ptr = fopen("Cliente.dat","rb+");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		esta = false;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr) && !esta)
+		{
+			if(reg_busc.cod_cliente == reg.cod_cliente && !reg.eliminado)
+			{
+				esta = true;
+			}
+			else
+			{
+				fread(&reg,sizeof(reg),1,ptr);
+			}
+		}
+		if(esta)
+		{
+			fseek(ptr,sizeof(reg)*(-1),SEEK_CUR);
+			reg.eliminado=true;
+			fwrite(&reg,sizeof(reg),1,ptr);
+		}
+		else
+		{
+			cout<<"codigo inexistente aun"<<endl;
+		}
+
+		fclose(ptr);
+	}
+}
+void ListarCliente()
+{
+	Cliente reg;
+	FILE *ptr;
+
+	ptr = fopen("Cliente.dat","rb");
+
+	if(ptr == NULL)
+	{
+		cout<<"archivo en blanco"<<endl;
+	}
+	else
+	{
+		cout<<"Listado de Cliente"<<endl;
+		cout<<"cod_cliente	nombre	edad	cod_dieta	estudiante_upsa"<<endl;
+		fread(&reg,sizeof(reg),1,ptr);
+		while(!feof(ptr))
+		{
+			if(!reg.eliminado)
+			{
+				MostrarCliente(reg);
+			}
+
+			fread(&reg,sizeof(reg),1,ptr);
+		}
+		fclose(ptr);
+	}
+}
+void MenuCliente()
+{
+	Cliente reg;
+	int op = 0;
+	char aux[100];
+	do
+	{
+		cout<<endl<<"Cliente";
+		cout<<endl<<"MENU DE Opciones";
+		cout<<endl<<"1. Adicionar";
+		cout<<endl<<"2. Listar";
+		cout<<endl<<"3. Buscar";
+		cout<<endl<<"4. Eliminar";
+		cout<<endl<<"5. Modificar";
+		cout<<endl<<"6. Salir";
+		cout<<endl<< "opcion: ";
+		gets(aux);
+		op = atoi(aux);
+		system("cls");
+		switch(op)
+		{
+		case 1:
+			{
+				do
+				{
+					reg.cod_cliente = -1;
+					cout<<"Ingresar cod_cliente:";
+					cin>>reg.cod_cliente;
+					if(reg.cod_cliente != 0 && ExisteCliente(reg.cod_cliente))
+					{
+						reg.cod_cliente = -1;
+						cout<<"Error: id esta siendo usado"<<endl;
+					}
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_cliente == -1);
+				if((reg.cod_cliente!= 0)&&PedirDatosCliente(reg))
+				{
+					AdicionarCliente(reg);
+				}
+				break;
+			}
+		case 2:
+			{
+				ListarCliente();
+				break;
+			}
+		case 3:
+			{
+				do
+				{
+					reg.cod_cliente = -1;
+					cout<<"Ingresar cod_cliente:";
+					cin>>reg.cod_cliente;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_cliente == -1 );
+				if(BuscarCliente(reg))
+				{
+					MostrarCliente(reg);
+				}
+				break;
+			}
+		case 4:
+			{
+				do
+				{
+					reg.cod_cliente = -1;
+					cout<<"Ingresar cod_cliente:";
+					cin>>reg.cod_cliente;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_cliente == -1 );
+				EliminarCliente(reg);
+				break;
+			}
+		case 5:
+			{
+				do
+				{
+					reg.cod_cliente = -1;
+					cout<<"Ingresar cod_cliente:";
+					cin>>reg.cod_cliente;
+					gets(aux);
+					cin.clear();
+				}while(reg.cod_cliente == -1 || (reg.cod_cliente != 0 && !ExisteCliente(reg.cod_cliente)));
+				if((reg.cod_cliente != 0)&& PedirDatosCliente(reg))
+				{
+					ModificarCliente(reg);
+				}
+				break;
+			}
+		}
+	}while(op != 6);
+}
+
+int main()
+{
+	int opcion = -1;
+	char aux[30];
+	do
+	{
+		opcion = -1;
+		system("cls");
+		cout<<"\n Menu Principal";
+		cout<<"\n";
+		cout<<"\n 1. Archivo Plato";
+		cout<<"\n 2. Archivo Dieta";
+		cout<<"\n 3. Archivo Cliente";
+		cout<<"\n 4. Salir";
+		cout<<"\n  Elija Una Opcion: ";
+		gets(aux);
+		opcion = atoi(aux);
+		switch(opcion)
+		{
+		case 1: 
+			MenuPlato();
+			break;
+		case 2: 
+			MenuDieta(); 
+			break;
+		case 3:
+			MenuCliente(); 
+			break;
+		}
+	}while(opcion!=4);
+	return 0;
+}
+
